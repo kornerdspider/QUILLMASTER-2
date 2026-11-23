@@ -14,6 +14,7 @@ if not exist ".venv\Scripts\python.exe" (
   ".venv\Scripts\python.exe" -m pip install --upgrade pip
   ".venv\Scripts\python.exe" -m pip install -r requirements.txt
   if errorlevel 1 goto fail
+  ".venv\Scripts\python.exe" -m pip install -r requirements-desktop.txt || echo  Optional app-window support was skipped. Quill Master will open in your browser.
 )
 
 ".venv\Scripts\python.exe" run.py %*

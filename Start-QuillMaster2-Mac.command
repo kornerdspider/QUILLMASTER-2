@@ -20,6 +20,7 @@ if [ ! -x .venv/bin/python ]; then
     read -r -p "  Press Return to close."
     exit 1
   fi
+  .venv/bin/python -m pip install -r requirements-desktop.txt || echo "  (Optional app-window support skipped. Quill Master will open in your browser.)"
 fi
 
 .venv/bin/python run.py "$@"

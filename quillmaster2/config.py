@@ -25,6 +25,18 @@ DEFAULTS = {
     # Scenes longer than this are cut into parts before the model reads them.
     "max_scene_words": 2500,
     "request_timeout_s": 600,
+    # Used by the Concordance to spot scenes that cover the same beat.
+    "embed_model": "nomic-embed-text",
+    # If LanguageTool is running (Quill Master 1 used it), grammar uses it.
+    "languagetool_url": "http://127.0.0.1:8081",
+    "language": "en-US",
+    # Story framework for the Structure pass: 7-point, three-act, hero's journey, save the cat
+    "framework": "7-point",
+    # Optional Merriam-Webster key for the Lexicon (leave empty to use the local AI).
+    "mw_key": "",
+    "mw_thesaurus_key": "",
+    # Ask before applying changes to the manuscript (make a backup first).
+    "ask_backup": True,
 }
 
 

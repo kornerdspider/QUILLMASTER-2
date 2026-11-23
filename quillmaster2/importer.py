@@ -34,7 +34,7 @@ def _read_docx(path):
     import docx  # python-docx
     out = []
     for p in docx.Document(path).paragraphs:
-        text = p.text.strip()
+        text = _docx_inline(p).strip()
         style = (p.style.name or "").lower() if p.style is not None else ""
         if not text:
             continue
@@ -43,6 +43,29 @@ def _read_docx(path):
         else:
             out.append(("para", text))
     return out
+
+
+def _docx_inline(p):
+    """Paragraph text with italics kept as *word* and bold as **word**."""
+    groups = []
+    for r in p.runs:
+        style = ("b" if r.bold else "") + ("i" if r.italic else "")
+        if groups and groups[-1][0] == style:
+            groups[-1][1] += r.text
+        else:
+            groups.append([style, r.text])
+    if not groups:
+        return p.text
+    out = []
+    for style, t in groups:
+        mark = {"i": "*", "b": "**", "bi": "***"}.get(style, "")
+        core = t.strip()
+        if not mark or not core:
+            out.append(t)
+            continue
+        lead, trail = t[:len(t) - len(t.lstrip())], t[len(t.rstrip()):]
+        out.append(f"{lead}{mark}{core}{mark}{trail}")
+    return "".join(out)
 
 
 def _read_odt(path):

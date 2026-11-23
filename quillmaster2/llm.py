@@ -122,6 +122,31 @@ class OllamaLLM:
             raise LLMError(f"Ollama error {r.status_code}: {r.text[:300]}")
         return r.json().get("message", {}).get("content", "")
 
+    def json(self, system, user, schema):
+        return parse_json(self._chat(system, user, schema=schema))
+
+    def text(self, system, user):
+        return self._chat(system, user).strip()
+
+    def embed(self, texts):
+        model = self.cfg.get("embed_model") or "nomic-embed-text"
+        try:
+            r = requests.post(f"{self.url}/api/embed", json={"model": model, "input": texts},
+                              timeout=self.cfg["request_timeout_s"])
+        except requests.RequestException as e:
+            raise LLMError(f"Can't reach Ollama for embeddings ({e})")
+        if r.status_code != 200:
+            raise LLMError(f"Embedding model '{model}' isn't available "
+                           f"(run: ollama pull {model})")
+        return r.json().get("embeddings", [])
+
+    def installed(self):
+        try:
+            r = requests.get(f"{self.url}/api/tags", timeout=5)
+            return [m.get("name", "") for m in r.json().get("models", [])]
+        except Exception:  # noqa: BLE001
+            return None
+
     def health(self):
         try:
             r = requests.get(f"{self.url}/api/tags", timeout=5)
@@ -182,6 +207,12 @@ class DemoLLM:
 
     def health(self):
         return {"ok": True, "message": "Demo mode: simple pattern reader, not an AI"}
+
+    def json(self, system, user, schema):
+        return {}
+
+    def text(self, system, user):
+        return ""
 
     def extract(self, text, known_names, context):
         facts = []

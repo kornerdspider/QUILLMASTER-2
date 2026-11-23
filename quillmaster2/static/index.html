@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quill Master 2</title>
 <link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="/static/icon.png">
 </head>
 <body class="night">
 <div class="app">
@@ -23,6 +24,9 @@
     <button data-page="index">Index</button>
     <button data-page="archive">Archive</button>
     <button data-page="desk">Reference Desk<span class="badge" id="qBadge" hidden>0</span></button>
+    <button data-page="passes">Passes</button>
+    <button data-page="reading">Reading Room</button>
+    <button data-page="lexicon">Lexicon</button>
     <div class="grow"></div>
     <button class="mini" id="nightBtn" title="Switch light / dark">&#9790;</button>
     <button data-page="settings" class="mini" title="Settings">&#9881;</button>
@@ -106,6 +110,73 @@
       </div>
     </section>
 
+
+    <!-- PASSES -->
+    <section class="page" id="page-passes">
+      <div class="label">Analysis</div>
+      <h1>Passes</h1>
+      <p class="lead">Each pass checks one thing. They run big to small: there's no point fixing commas in a scene that structure says to cut. Nothing in your book changes until you accept a finding.</p>
+      <div class="row" style="margin-bottom:12px">
+        <select class="field" id="passBook"></select>
+        <select class="field" id="passScope"><option value="all">Whole book</option><option value="pick">Chosen chapters</option></select>
+        <select class="field" id="passChapters" multiple size="1" style="min-width:220px;display:none"></select>
+        <label class="small muted">Story framework <select class="field" id="passFramework"></select></label>
+      </div>
+      <div class="label">Presets</div>
+      <div class="presets" id="presets"></div>
+      <div class="passlist" id="passList"></div>
+      <div class="row"><button class="btn primary" id="runPasses">Run selected passes</button><span class="muted small" id="passNote"></span></div>
+      <hr class="brass">
+      <h2>Results</h2>
+      <table class="tbl" id="passSummary"></table>
+      <div class="row" style="margin:22px 0 10px"><h3 style="margin:0">Findings</h3><select class="field" id="passFilter"><option value="">All passes</option></select><span class="muted small" id="findCount"></span></div>
+      <div id="findList"></div>
+    </section>
+
+    <!-- READING ROOM -->
+    <section class="page" id="page-reading">
+      <div class="label">Chapter mode</div>
+      <h1>The Reading Room</h1>
+      <div class="rr-top">
+        <select class="field hide-focus" id="rrBook"></select>
+        <button class="btn" id="rrPrev" title="Previous chapter">&larr;</button>
+        <select class="field" id="rrChapter"></select>
+        <button class="btn" id="rrNext" title="Next chapter">&rarr;</button>
+        <div class="tabs hide-focus" id="rrTabs" style="margin:0 0 0 12px;border:0">
+          <button data-wb="line" class="active">Line edit</button><button data-wb="beats">Beats</button>
+          <button data-wb="dialogue">Dialogue</button><button data-wb="setting">Setting</button>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn hide-focus" id="rrPolish" title="Line edit, grammar and punctuation on this chapter">Polish this chapter</button>
+        <button class="btn" id="rrFocus" title="Hide everything but the text (Esc to leave)">Focus</button>
+      </div>
+      <div class="rr">
+        <div class="rr-left"><div class="label" style="margin-bottom:8px">In this chapter</div><div id="rrCards"></div></div>
+        <div id="rrMain"></div>
+        <div class="rr-right">
+          <div class="row" style="margin-bottom:10px"><div class="label">Marginalia</div><div class="spacer"></div>
+            <select class="field small" id="rrFilter" style="font-size:12px;padding:4px 6px"><option value="">All passes</option></select></div>
+          <div id="rrFindings"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEXICON -->
+    <section class="page" id="page-lexicon">
+      <div class="label">The Lexicographer</div>
+      <h1>The Lexicon</h1>
+      <p class="lead">Definitions, synonyms and poetry forms. In the Reading Room, select a word and click Look up to land here with it.</p>
+      <div class="row"><input type="text" id="lexWord" placeholder="A word" style="width:280px"><button class="btn primary" id="lexGo">Look up</button></div>
+      <div id="lexOut" style="margin:16px 0 0"></div>
+      <hr class="brass">
+      <h2>Poetry form checker</h2>
+      <div class="row" style="margin-bottom:10px"><select class="field" id="poemForm"><option value="">Guess the form</option>
+        <option>haiku</option><option>tanka</option><option>limerick</option><option>shakespearean sonnet</option><option>petrarchan sonnet</option><option>villanelle</option><option>quatrain</option><option>couplet</option><option>free verse</option></select>
+        <button class="btn primary" id="poemGo">Check</button></div>
+      <textarea id="poemText" placeholder="Paste a poem, one line per line"></textarea>
+      <div id="poemOut" style="margin-top:16px"></div>
+    </section>
+
     <!-- SETTINGS -->
     <section class="page" id="page-settings">
       <h1>Settings</h1>
@@ -116,13 +187,25 @@
         <label>Ollama address</label><input type="text" id="setUrl">
         <label>Context size</label><input type="number" id="setCtx" step="1024">
         <label>Longest scene (words)</label><input type="number" id="setScene" step="250">
+        <label>Story framework</label><select class="field" id="setFramework"></select>
+        <label>LanguageTool address</label><input type="text" id="setLT" placeholder="http://127.0.0.1:8081 (leave empty to skip)">
+        <label>Embedding model</label><input type="text" id="setEmbed">
+        <label>Merriam-Webster dictionary key</label><input type="text" id="setMW" placeholder="optional">
+        <label>Merriam-Webster thesaurus key</label><input type="text" id="setMWT" placeholder="optional">
+        <label>Ask for a backup before changes</label><select class="field" id="setBackup"><option value="1">Yes</option><option value="0">No</option></select>
       </div>
       <div class="row" style="margin-top:20px"><button class="btn primary" id="saveSettings">Save</button><span class="muted small" id="settingsMsg"></span></div>
+      <div class="row" style="margin-top:14px"><button class="btn danger" id="quitBtn">Quit Quill Master</button><span class="muted small">Stops it completely. Your work is already saved.</span></div>
+      <hr class="brass">
+      <h2>AI models</h2>
+      <div id="modelsBox" class="small"></div>
     </section>
   </main>
 </div>
 
 <div class="drawer" id="drawer"></div>
+<div class="selbar" id="selbar"><button id="selLook">Look up</button><button id="selReplace">Replace…</button></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
 <script src="/static/app.js"></script>
 </body>

@@ -85,6 +85,21 @@ CREATE TABLE IF NOT EXISTS documents (
     id INTEGER PRIMARY KEY, series_id INTEGER, book_id INTEGER,
     kind TEXT NOT NULL, content TEXT, built_at REAL
 );
+CREATE TABLE IF NOT EXISTS findings (
+    id INTEGER PRIMARY KEY, book_id INTEGER NOT NULL, chapter_id INTEGER, scene_id INTEGER,
+    pass TEXT NOT NULL, agent TEXT, kind TEXT,
+    severity TEXT DEFAULT 'medium',      -- high | medium | low
+    start INTEGER, "end" INTEGER, quote TEXT, message TEXT NOT NULL, suggestion TEXT,
+    confidence REAL DEFAULT 0.7, fact_ids TEXT DEFAULT '[]',
+    status TEXT DEFAULT 'open',          -- open | accepted | rejected | stale
+    run_id INTEGER, created REAL
+);
+CREATE TABLE IF NOT EXISTS pass_runs (
+    id INTEGER PRIMARY KEY, book_id INTEGER, pass TEXT, chapter_ids TEXT,
+    started REAL, finished REAL, found INTEGER DEFAULT 0, note TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_findings_scene ON findings(scene_id, status);
+CREATE INDEX IF NOT EXISTS ix_findings_book ON findings(book_id, pass, status);
 CREATE TABLE IF NOT EXISTS jobs (
     id INTEGER PRIMARY KEY, kind TEXT, target_id INTEGER,
     status TEXT DEFAULT 'queued',        -- queued | running | paused | done | error
@@ -135,9 +150,22 @@ def tx():
             conn.close()
 
 
+# Columns added after build 1. Older databases get them on start.
+MIGRATIONS = [
+    ("scenes", "beat", "TEXT"), ("scenes", "moves_plot", "INTEGER"),
+    ("scenes", "goal", "TEXT"), ("scenes", "conflict", "TEXT"),
+    ("scenes", "outcome", "TEXT"), ("scenes", "tension", "INTEGER"),
+    ("books", "last_backup", "REAL"), ("books", "edited", "REAL"),
+]
+
+
 def init():
     with tx() as c:
         c.executescript(SCHEMA)
+        for table, col, typ in MIGRATIONS:
+            cols = {r[1] for r in c.execute(f"PRAGMA table_info({table})")}
+            if col not in cols:
+                c.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
 
 
 def now():

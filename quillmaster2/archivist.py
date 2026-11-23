@@ -602,7 +602,7 @@ def outline(book_id):
                 "SELECT id, position, word_count, summary, pov, location, time_text, "
                 "read_fingerprint=fingerprint AS is_read FROM scenes WHERE chapter_id=? ORDER BY position",
                 (ch["id"],)))
-            out.append({"chapter": ch["position"], "title": ch["title"],
+            out.append({"id": ch["id"], "chapter": ch["position"], "title": ch["title"],
                         "word_count": ch["word_count"], "summary": ch["summary"],
                         "scenes": scenes})
         return out

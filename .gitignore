@@ -8,3 +8,9 @@ venv/
 *.db-shm
 .DS_Store
 Thumbs.db
+build/
+dist/
+*.spec
+dmg/
+pkg/
+smoke-data/

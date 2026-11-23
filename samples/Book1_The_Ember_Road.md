@@ -2,7 +2,7 @@
 
 Mara stood at the rail while the ferry crossed into Varrow. Mara's eyes were grey in the morning light, and she kept them on the far shore. Tavin was 19 years old and had never left the valley before.
 
-Tavin said the water looked colder than it was. Mara said nothing. In her coat she carried the locked box her mother had left her, and she had not yet found a key that fit it.
+Tavin said the water looked colder than it was. Mara said nothing. "Hold the rail." Tavin said softly. Suddenly the ferry lurched, and with her heart pounding, Mara gripped the the wet rope. In her coat she carried the locked box her mother had left her, and she had not yet found a key that fit it.
 
 ***
 

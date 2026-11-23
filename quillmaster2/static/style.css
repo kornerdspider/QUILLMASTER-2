@@ -36,7 +36,8 @@ h1 { font-size: 30px; } h2 { font-size: 22px; } h3 { font-size: 18px; }
 button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- frame ---------- */
-.app { display: grid; grid-template-columns: 92px 1fr; grid-template-rows: 64px 1fr; height: 100vh; }
+.app { display: grid; grid-template-columns: 92px minmax(0, 1fr); grid-template-rows: 64px minmax(0, 1fr); height: 100vh; overflow: hidden; }
+a { color: var(--lamp); }
 header { grid-column: 1 / 3; display: flex; align-items: center; gap: 20px; padding: 0 28px;
   border-bottom: 1px solid var(--rule); background: var(--paper); }
 .wordmark { font: 600 21px/1 var(--serif-display); letter-spacing: -.01em; }
@@ -54,8 +55,8 @@ header select { background: transparent; border: 1px solid var(--rule); border-r
 .bar i { display: block; height: 100%; width: 0; background: var(--lamp); transition: width .4s; }
 
 /* spines nav */
-nav { border-right: 1px solid var(--rule); padding: 18px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--paper-2); }
-nav button { border: 0; background: var(--card); border-radius: 6px; min-height: 112px; padding: 16px 0; white-space: nowrap; cursor: pointer;
+nav { border-right: 1px solid var(--rule); padding: 14px 12px; display: flex; flex-direction: column; gap: 6px; background: var(--paper-2); overflow-y: auto; min-height: 0; }
+nav button { border: 0; background: var(--card); border-radius: 6px; min-height: 0; flex-shrink: 0; padding: 14px 0; white-space: nowrap; cursor: pointer;
   writing-mode: vertical-rl; transform: rotate(180deg); font: 600 12px var(--sans); letter-spacing: .1em;
   text-transform: uppercase; color: var(--ink-2); border-left: 3px solid transparent; position: relative;
   box-shadow: var(--shadow); }
@@ -182,3 +183,66 @@ body:not(.night) .icard { background-image: linear-gradient(var(--card) 38px, #E
 .toast.on { opacity: 1; }
 .empty-state { border: 1px dashed var(--rule); border-radius: 10px; padding: 36px; text-align: center; color: var(--slate); }
 @media (max-width: 900px) { .desk { grid-template-columns: 1fr; } main { padding: 24px; } }
+
+/* ---------- reading room ---------- */
+.rr-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.rr { display: grid; grid-template-columns: 230px minmax(0, 1fr) 330px; gap: 26px; align-items: start; }
+.rr-left, .rr-right { position: sticky; top: 0; max-height: calc(100vh - 130px); overflow: auto; padding-bottom: 20px; }
+.mini-card { background: var(--card); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; font-size: 13.5px; cursor: pointer; }
+.mini-card b { font-family: var(--serif-display); font-size: 15px; display: block; margin-bottom: 2px; }
+.mini-card .f { color: var(--ink-2); font-size: 13px; }
+.scene { margin-bottom: 30px; }
+.scene-head { display: flex; gap: 10px; align-items: center; border-bottom: 1px solid var(--rule); padding-bottom: 6px; margin-bottom: 12px; font: 12px var(--sans); color: var(--slate); }
+.scene-head .callno { color: var(--brass); font-weight: 600; letter-spacing: .08em; }
+.scene-head button { font: 12px var(--sans); border: 0; background: none; color: var(--lamp); cursor: pointer; padding: 0 4px; }
+.stext { white-space: pre-wrap; font-size: 18px; line-height: 1.75; max-width: 68ch; }
+.stext .mk { opacity: .35; }
+.stext mark { background: transparent; color: inherit; border-bottom: 2px solid var(--brass); cursor: pointer; padding: 0 1px; }
+.stext mark.sev-high { border-bottom-color: var(--oxblood); background: var(--oxblood-soft); }
+.stext mark.on { background: var(--brass-soft); outline: 1px solid var(--brass); }
+.ag-story { --ag: #2F4F43; } .ag-arch { --ag: #5A3E2B; } .ag-char { --ag: #7A2E2E; } .ag-conc { --ag: #3D5A80; }
+.ag-copy { --ag: #A88A4F; } .ag-ref { --ag: #6B5B95; }
+body.night .ag-story { --ag: #7FB59E; } body.night .ag-arch { --ag: #C9A88A; } body.night .ag-char { --ag: #D88A84; }
+body.night .ag-conc { --ag: #8FB1D9; } body.night .ag-copy { --ag: #C9AE74; } body.night .ag-ref { --ag: #B3A5DB; }
+.stext mark[class*="ag-"] { border-bottom-color: var(--ag); }
+.fcard { background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--ag, var(--brass)); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 14px; }
+.fcard.on { box-shadow: 0 0 0 2px var(--brass); }
+.fcard .who { font: 600 10.5px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--slate); display: flex; gap: 6px; }
+.fcard .msg { margin: 4px 0 6px; }
+.fcard q { font-style: italic; color: var(--ink-2); font-size: 13px; }
+.fcard input { width: 100%; margin: 6px 0; font-size: 13px; padding: 6px 8px; }
+.fcard .acts { display: flex; gap: 6px; }
+.fcard .acts button { font: 12px var(--sans); padding: 4px 10px; }
+.sevdot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; background: var(--slate); margin-top: 3px; }
+.sevdot.high { background: var(--oxblood); } .sevdot.medium { background: var(--brass); }
+.strip { display: flex; gap: 4px; margin: 10px 0 18px; }
+.strip .cell { flex: 1; background: var(--paper-2); border-radius: 4px; padding: 8px; font: 11px var(--sans); color: var(--ink-2); min-height: 54px; }
+.strip .cell.beat { background: var(--lamp-soft); color: var(--lamp); font-weight: 600; }
+.sense { display: flex; gap: 6px; align-items: flex-end; height: 44px; }
+.sense i { display: block; width: 18px; background: var(--lamp); border-radius: 3px 3px 0 0; opacity: .8; }
+.sense-l { display: flex; gap: 6px; font: 10px var(--sans); color: var(--slate); }
+.sense-l span { width: 18px; text-align: center; }
+.chip { display: inline-block; font: 600 10.5px var(--sans); padding: 2px 8px; border-radius: 999px; margin-right: 4px; }
+.chip.ok { background: var(--lamp-soft); color: var(--lamp); } .chip.no { background: var(--oxblood-soft); color: var(--oxblood); }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; font: 600 11px var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--slate); padding: 8px 8px 8px 0; border-bottom: 1px solid var(--rule); }
+.tbl td { padding: 8px 8px 8px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.selbar { position: fixed; display: none; gap: 4px; background: var(--ink); color: var(--paper); border-radius: 8px; padding: 4px; z-index: 25; box-shadow: var(--shadow); }
+.selbar button { background: none; border: 0; color: inherit; font: 13px var(--sans); padding: 6px 10px; cursor: pointer; border-radius: 6px; }
+.selbar button:hover { background: rgba(255,255,255,.12); }
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 40; }
+.modal-bg.on { display: flex; }
+.modal { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; padding: 28px 30px; width: min(560px, 92vw); box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.modal textarea { min-height: 280px; }
+.passlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; margin: 14px 0 20px; }
+.passlist label { display: flex; gap: 10px; background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; cursor: pointer; font-size: 14px; }
+.passlist label .n { font: 600 12px var(--sans); color: var(--brass); width: 18px; }
+.passlist label b { font-family: var(--serif-display); font-size: 16px; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; }
+body.focus nav, body.focus header, body.focus .rr-left, body.focus .rr-right, body.focus .rr-top .hide-focus, body.focus #page-reading > .label, body.focus #page-reading > h1 { display: none !important; }
+body.focus .app { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+body.focus .rr { grid-template-columns: 1fr; }
+body.focus .stext { margin: 0 auto; font-size: 19px; }
+body.focus main { padding-top: 24px; }
+.poem-line { display: grid; grid-template-columns: 30px 1fr 50px 30px; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
+@media (max-width: 1200px) { .rr { grid-template-columns: minmax(0,1fr) 300px; } .rr-left { display: none; } }
