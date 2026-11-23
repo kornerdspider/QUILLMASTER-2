@@ -26,6 +26,7 @@ function go(page) {
   render();
 }
 // Dark is the default. The moon button switches to the light paper look and back.
+$("#health").style.cursor = "pointer"; $("#health").onclick = () => go("settings");
 $("#nightBtn").onclick = () => { document.body.classList.toggle("night"); try { localStorage.qmTheme = document.body.classList.contains("night") ? "dark" : "light"; } catch (e) {} };
 try { if (localStorage.qmTheme === "light") document.body.classList.remove("night"); } catch (e) {}
 
@@ -130,7 +131,7 @@ function renderCatalog() {
   $("#readAllNote").textContent = !books.length ? "Add a book to begin." : unread ? `${fmt(unread)} scenes to read, book by book in series order.` : "Everything is read. Re-import a book after editing it.";
   $("#readAllBtn").disabled = !books.length || !unread;
   $("#readAllBtn").onclick = async () => { try { await api(`/v2/series/${state.sid}/full-read`, { method: "POST" }); toast("Reading started."); lastJobStatus = "running"; } catch (e) { toast(e.message); } };
-  renderSpines(); renderFixes();
+  renderSpines(); renderFixes(); renderAIBanner();
 }
 async function upload(file, params) {
   const q = new URLSearchParams({ series_id: state.sid, filename: file.name, ...params });
@@ -314,21 +315,54 @@ async function renderSettings() {
   $("#setCtx").value = s.num_ctx; $("#setScene").value = s.max_scene_words; $("#setLT").value = s.languagetool_url || "";
   $("#setEmbed").value = s.embed_model || ""; $("#setMW").value = s.mw_key || ""; $("#setMWT").value = s.mw_thesaurus_key || "";
   $("#setBackup").value = s.ask_backup ? "1" : "0";
-  renderModels(s);
+  renderAISetup();
 }
-async function renderModels(s) {
-  const m = await api("/v2/ollama/models");
-  const box = $("#modelsBox");
-  if (!m.running) {
-    box.innerHTML = `<p>Ollama isn't running on this computer. Install it from <a href="https://ollama.com/download" target="_blank">ollama.com/download</a>, open it, then come back here and click <b>Check again</b>.</p><button class="btn" id="mCheck">Check again</button>`;
-    $("#mCheck").onclick = () => renderModels(s); return;
-  }
-  const has = n => m.models.some(x => x === n || x.split(":")[0] === n || x === n + ":latest");
-  box.innerHTML = `<p>Installed: ${m.models.length ? m.models.map(esc).join(", ") : "none yet"}.</p>
-    ${[["Main model", s.model], ["Embedding model (for spotting repeated scenes)", s.embed_model]].map(([label, n]) =>
-      `<div class="row" style="margin:6px 0"><span style="min-width:330px">${label}: <b>${esc(n)}</b></span>${has(n) ? '<span class="chip ok">installed</span>' : `<button class="btn small" data-pull="${esc(n)}">Download it</button>`}</div>`).join("")}
-    <p class="muted">Downloads can be several gigabytes. The progress bar shows at the top.</p>`;
-  $$("[data-pull]").forEach(b => b.onclick = async () => { try { await api("/v2/ollama/pull", { method: "POST", json: { model: b.dataset.pull } }); lastJobStatus = "running"; toast("Download started."); } catch (e) { toast(e.message); } });
+const GUIDE = "https://github.com/kornerdspider/QUILLMASTER-2/blob/main/docs/AI-SETUP.md";
+async function renderModels() { return renderAISetup(); }
+async function renderAISetup() {
+  const box = $("#aiSetup"); if (!box) return;
+  let st; try { st = await api("/v2/ai/status"); } catch (e) { return; }
+  const osName = { windows: "Windows", mac: "Mac", linux: "Linux" }[st.system];
+  const note = {
+    windows: "Quill Master downloads Ollama's official installer and opens it. When its window appears, click <b>Install</b>, then come back here. No administrator password is needed.",
+    mac: "Quill Master downloads the Ollama app, puts it in your <b>Applications</b> folder and opens it. If Ollama asks to install its command-line tool, you can click <b>Not now</b>; Quill Master doesn't need it.",
+    linux: "Quill Master downloads Ollama (over 1 GB, because it includes graphics-card support) and keeps it in its own folder, so no password is needed. It starts Ollama for you each time.",
+  }[st.system];
+  const usingRec = st.model === st.recommended;
+  const recInstalled = st.models.some(m => m === st.recommended);
+  const s1 = st.running, s2 = st.running && usingRec && recInstalled, s3 = st.running && st.embed_installed;
+  const step = (n, done, title, body) => `<div class="step ${done ? "done" : ""}"><div class="num">${done ? "✓" : n}</div><div><h3>${title}</h3>${body}</div></div>`;
+  box.innerHTML = `<h2>AI setup <span class="muted small">· ${osName}</span></h2>
+    <p class="muted small">Four steps, all from here. Downloads run in the background; the bar at the top shows progress. <a href="${GUIDE}" target="_blank">Step-by-step guide for Windows, Mac and Linux</a></p>
+    <div class="setup">
+    ${step(1, s1, "Get Ollama, the free AI engine", s1 ? `<p>Ollama is installed and running.</p>` : st.installed
+      ? `<p>Ollama is installed but not running.</p><div class="row"><button class="btn primary" id="aiStart">Start Ollama</button></div>`
+      : `<p>${note}</p><div class="row"><button class="btn primary" id="aiInstall">Download and install Ollama</button><a class="btn ghost" href="${st.download_url}" target="_blank">Or download it yourself</a></div>`)}
+    ${step(2, s2, "Get the Qwen3.5 4B model", !s1 ? `<p>Do step 1 first.</p>` : s2 ? `<p><b>${esc(st.recommended)}</b> is downloaded and Quill Master is using it.</p>`
+      : recInstalled ? `<p>${esc(st.recommended)} is downloaded. Quill Master is using <b>${esc(st.model)}</b>.</p><div class="row"><button class="btn primary" id="aiUse">Use Qwen3.5 4B</button></div>`
+      : `<p>The AI model that reads your books: about 3.4 GB to download. It runs on this computer; nothing is sent anywhere.</p><div class="row"><button class="btn primary" id="aiModel">Download Qwen3.5 4B</button></div>`)}
+    ${step(3, s3, "Get the helper model <span class=\"muted small\">(optional, small)</span>", !s1 ? `<p>Do step 1 first.</p>` : s3 ? `<p><b>${esc(st.embed_model)}</b> is downloaded.</p>`
+      : `<p>Lets the Repetition pass spot scenes that cover the same ground. A small download.</p><div class="row"><button class="btn" id="aiEmbed">Download ${esc(st.embed_model)}</button></div>`)}
+    ${step(4, false, "Test it", !s2 && !(s1 && st.model_installed) ? `<p>Do steps 1 and 2 first.</p>` : `<p>Asks the model one tiny question to make sure everything works.</p><div class="row"><button class="btn primary" id="aiTest">Test the AI</button><span id="aiTestOut" class="small"></span></div>`)}
+    </div>`;
+  const pull = model => startJob(api("/v2/ollama/pull", { method: "POST", json: { model } }), `Downloading ${model}…`);
+  $("#aiInstall") && ($("#aiInstall").onclick = () => startJob(api("/v2/ai/install-ollama", { method: "POST" }), st.system === "windows" ? "Downloading Ollama. Its installer opens when the download finishes." : "Downloading Ollama…"));
+  $("#aiStart") && ($("#aiStart").onclick = async () => { $("#aiStart").disabled = true; $("#aiStart").textContent = "Starting…"; try { await api("/v2/ai/start-ollama", { method: "POST" }); toast("Ollama is running."); } catch (e) { toast(e.message); } renderAISetup(); checkHealth(); });
+  $("#aiModel") && ($("#aiModel").onclick = async () => { await api("/v2/ai/use-model", { method: "POST", json: { model: st.recommended } }); pull(st.recommended); });
+  $("#aiUse") && ($("#aiUse").onclick = async () => { await api("/v2/ai/use-model", { method: "POST", json: { model: st.recommended } }); toast("Using Qwen3.5 4B."); renderSettings(); checkHealth(); });
+  $("#aiEmbed") && ($("#aiEmbed").onclick = () => pull(st.embed_model));
+  $("#aiTest") && ($("#aiTest").onclick = async () => {
+    $("#aiTestOut").textContent = "Asking… (the first answer can take a minute while the model loads)";
+    try { const r = await api("/v2/ai/test", { method: "POST" }); $("#aiTestOut").innerHTML = `<span class="chip ok">works</span> ${esc(r.model)} answered “${esc(r.reply)}” in ${r.seconds} seconds.`; }
+    catch (e) { $("#aiTestOut").innerHTML = `<span class="chip no">problem</span> ${esc(e.message)}`; }
+  });
+}
+async function renderAIBanner() {
+  const el = $("#aiBanner"); if (!el) return;
+  let st; try { st = await api("/v2/ai/status"); } catch (e) { return; }
+  const ready = st.running && st.model_installed;
+  el.innerHTML = ready || st.engine === "demo" ? "" : `<div class="banner"><p><b>Set up the AI first.</b> ${!st.installed ? "Quill Master can download and install Ollama and the Qwen3.5 4B model for you." : !st.running ? "Ollama is installed but not running." : "The AI model isn't downloaded yet."}</p><button class="btn primary" id="aiGo">Set up the AI</button></div>`;
+  $("#aiGo") && ($("#aiGo").onclick = () => go("settings"));
 }
 $("#quitBtn").onclick = async () => { if (!confirm("Quit Quill Master 2?")) return; await api("/v2/quit", { method: "POST" }).catch(() => {}); document.body.innerHTML = '<p style="padding:40px;font-size:18px">Quill Master 2 has stopped. You can close this tab.</p>'; };
 $("#saveSettings").onclick = async () => {

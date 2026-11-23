@@ -82,18 +82,20 @@ Download the installer for your computer from the
    `./install.sh`
 4. Open your **Menu** and search for **Quill Master 2**.
 
-### The AI engine (all computers)
-Quill Master uses **Ollama**, a free program that runs the AI on your computer.
-1. If you don't have it: go to [ollama.com/download](https://ollama.com/download), download it for your
-   computer, and install it like any other app.
-2. Open Quill Master 2 and click the **⚙ Settings** button at the bottom left.
-3. Under **AI models**, click **Download it** next to the main model, and next to the embedding model.
-   These are big downloads (a few gigabytes); the progress bar shows at the top.
-4. When the pill at the top right turns green, you're ready.
+### Set up the AI (all computers)
+Quill Master can download and install the AI for you. It uses **Ollama** (the free engine that runs AI
+on your computer) and the **Qwen3.5 4B** model (about 3.4 GB).
+1. Open Quill Master 2 and click the **⚙** button at the bottom of the left-hand menu.
+2. Under **AI setup**, click **Download and install Ollama** (Step 1).
+   On Windows, the Ollama installer opens when the download finishes: click **Install**.
+3. Click **Download Qwen3.5 4B** (Step 2) and wait for the progress bar at the top to finish.
+4. Optional: click **Download nomic-embed-text** (Step 3).
+5. Click **Test the AI** (Step 4). A green **works** label means you're ready.
 
-To use a different model, type its name in **Model name** and click **Save**. To see what you have,
-open Terminal (Mac/Linux) or Command Prompt (Windows: press the Windows key, type `cmd`, press Enter)
-and type `ollama list`.
+![AI setup](docs/screenshots/ai-setup.png)
+
+Full step-by-step guide for Windows, Mac and Linux, including how to do it by hand if needed:
+[**docs/AI-SETUP.md**](docs/AI-SETUP.md)
 
 ---
 

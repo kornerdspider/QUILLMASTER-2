@@ -42,6 +42,7 @@
         <button class="btn primary" id="readAllBtn">Read Full Manuscript</button>
         <span class="muted small" id="readAllNote"></span>
       </div>
+      <div id="aiBanner"></div>
       <div class="shelf" id="shelf"></div>
       <hr class="brass">
       <div class="label" id="spinesLabel">Chapters</div>
@@ -181,6 +182,9 @@
     <section class="page" id="page-settings">
       <h1>Settings</h1>
       <p class="lead">The AI runs on this computer through Ollama. Your manuscript never leaves it.</p>
+      <div id="aiSetup"></div>
+      <hr class="brass">
+      <h2>All settings</h2>
       <div style="display:grid;grid-template-columns:200px 1fr;gap:14px;max-width:640px;align-items:center">
         <label>Reader</label><select class="field" id="setEngine"><option value="ollama">Ollama (local AI)</option><option value="demo">Demo (pattern reader, not AI)</option></select>
         <label>Model name</label><input type="text" id="setModel">
@@ -196,9 +200,7 @@
       </div>
       <div class="row" style="margin-top:20px"><button class="btn primary" id="saveSettings">Save</button><span class="muted small" id="settingsMsg"></span></div>
       <div class="row" style="margin-top:14px"><button class="btn danger" id="quitBtn">Quit Quill Master</button><span class="muted small">Stops it completely. Your work is already saved.</span></div>
-      <hr class="brass">
-      <h2>AI models</h2>
-      <div id="modelsBox" class="small"></div>
+
     </section>
   </main>
 </div>

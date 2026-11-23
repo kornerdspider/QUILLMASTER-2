@@ -3,3 +3,4 @@ uvicorn>=0.29
 python-docx>=1.1
 odfpy>=1.4
 requests>=2.31
+zstandard>=0.22

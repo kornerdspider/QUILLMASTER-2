@@ -14,7 +14,7 @@ from starlette.responses import FileResponse, JSONResponse, PlainTextResponse, R
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
-from . import __version__, archivist, chapter, config, db, importer, lexicon, llm, passes
+from . import __version__, archivist, chapter, config, db, importer, lexicon, llm, ollama_setup, passes
 
 STATIC = Path(__file__).parent / "static"
 _jobs = {}            # job id -> threading.Event used to pause
@@ -585,6 +585,49 @@ async def ollama_pull(request):
     return ok({"job_id": jid}, 202) if jid else err("Something is already running.", 409)
 
 
+
+# ---------------------------------------------------------------- AI setup
+
+async def ai_status(_):
+    return ok(ollama_setup.status())
+
+
+async def ai_install(_):
+    def work(progress, stop):
+        return ollama_setup.install(progress, stop.is_set)
+    jid = _start("install_ollama", 0, work)
+    return ok({"job_id": jid}, 202) if jid else err("Something is already running.", 409)
+
+
+async def ai_start(_):
+    import asyncio
+    try:
+        msg = await asyncio.get_running_loop().run_in_executor(None, ollama_setup.start)
+        return ok({"message": msg})
+    except RuntimeError as e:
+        return err(str(e), 503)
+
+
+async def ai_use_model(request):
+    data = await body(request)
+    cfg = config.load()
+    cfg["model"] = (data.get("model") or ollama_setup.RECOMMENDED_MODEL).strip()
+    cfg["engine"] = "ollama"
+    config.save(cfg)
+    return ok(ollama_setup.status())
+
+
+async def ai_test(_):
+    import asyncio
+    cfg = config.load()
+    try:
+        res = await asyncio.get_running_loop().run_in_executor(
+            None, ollama_setup.check_model, llm.OllamaLLM(cfg))
+        return ok({"model": cfg["model"], **res})
+    except llm.LLMError as e:
+        return err(str(e), 503)
+
+
 routes = [
     Route("/", index),
     Route("/v2/health", health),
@@ -633,6 +676,11 @@ routes = [
     Route("/v2/lexicon/lookup", lexicon_lookup, methods=["POST"]),
     Route("/v2/lexicon/poem", lexicon_poem, methods=["POST"]),
     Route("/v2/ollama/models", ollama_models),
+    Route("/v2/ai/status", ai_status),
+    Route("/v2/ai/install-ollama", ai_install, methods=["POST"]),
+    Route("/v2/ai/start-ollama", ai_start, methods=["POST"]),
+    Route("/v2/ai/use-model", ai_use_model, methods=["POST"]),
+    Route("/v2/ai/test", ai_test, methods=["POST"]),
     Route("/v2/ollama/pull", ollama_pull, methods=["POST"]),
     Mount("/static", StaticFiles(directory=STATIC), name="static"),
 ]
@@ -643,4 +691,5 @@ def create_app():
     with db.tx() as c:  # a read that was running when the app closed is now paused
         c.execute("UPDATE jobs SET status='paused' WHERE status='running'")
         c.execute("UPDATE books SET status='imported' WHERE status='reading'")
+    threading.Thread(target=ollama_setup.autostart, daemon=True).start()
     return Starlette(routes=routes)

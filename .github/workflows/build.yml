@@ -59,7 +59,7 @@ jobs:
             --osx-bundle-identifier com.kornerdspider.quillmaster2 \
             --add-data "quillmaster2/static${SEP}quillmaster2/static" \
             --add-data "samples${SEP}samples" \
-            --collect-submodules uvicorn --collect-submodules quillmaster2 \
+            --collect-submodules uvicorn --collect-submodules quillmaster2 --hidden-import zstandard \
             run.py
 
       - name: Smoke test (start the built app and ask it for its health)
@@ -77,6 +77,8 @@ jobs:
           curl -sf http://127.0.0.1:8765/v2/health
           curl -sf http://127.0.0.1:8765/ | grep -q "Quill Master"
           curl -sf http://127.0.0.1:8765/static/app.js > /dev/null
+          curl -sf http://127.0.0.1:8765/v2/ai/status
+          python -c "import zstandard" 2>/dev/null && echo "zstandard available"
           curl -sf -X POST http://127.0.0.1:8765/v2/quit || true
           sleep 2; kill $PID 2>/dev/null || true
           echo "Smoke test passed"
