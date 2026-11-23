@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quill Master 2</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="night">
+<div class="app">
+  <header>
+    <div class="wordmark">Quill Master<span>2</span></div>
+    <select id="seriesSel" title="Series"></select>
+    <button class="btn ghost small" id="newSeriesBtn">+ New series</button>
+    <div class="spacer"></div>
+    <div class="job" id="job"><span id="jobMsg">Reading…</span><div class="bar"><i id="jobBar"></i></div>
+      <button class="btn ghost small" id="pauseBtn">Pause</button></div>
+    <span class="pill" id="health"><span class="dot" id="healthDot"></span><span id="healthMsg">Checking…</span></span>
+  </header>
+
+  <nav>
+    <button data-page="catalog" class="active">Catalog</button>
+    <button data-page="index">Index</button>
+    <button data-page="archive">Archive</button>
+    <button data-page="desk">Reference Desk<span class="badge" id="qBadge" hidden>0</span></button>
+    <div class="grow"></div>
+    <button class="mini" id="nightBtn" title="Switch light / dark">&#9790;</button>
+    <button data-page="settings" class="mini" title="Settings">&#9881;</button>
+  </nav>
+
+  <main>
+    <!-- CATALOG -->
+    <section class="page on" id="page-catalog">
+      <div class="label">Full Manuscript mode</div>
+      <h1>The Catalog</h1>
+      <p class="lead">Add each book of the series in order, then read them in. Quill Master reads one scene at a time and files what it learns in the Story Bible. You can pause and come back; it picks up where it stopped.</p>
+      <div class="row" style="margin-bottom:22px">
+        <button class="btn primary" id="readAllBtn">Read Full Manuscript</button>
+        <span class="muted small" id="readAllNote"></span>
+      </div>
+      <div class="shelf" id="shelf"></div>
+      <hr class="brass">
+      <div class="label" id="spinesLabel">Chapters</div>
+      <div class="spines" id="spines"></div>
+      <div class="legend">Green spines have been read. Hover a spine for its title.</div>
+      <hr class="brass">
+      <h2>To fix</h2>
+      <p class="muted small">Lines that disagree with canon after you answered a question. Fix them in your manuscript, then re-import the book.</p>
+      <div class="list" id="fixes"></div>
+    </section>
+
+    <!-- INDEX -->
+    <section class="page" id="page-index">
+      <div class="label">Full Manuscript mode</div>
+      <h1>The Index</h1>
+      <div class="row" style="margin-bottom:16px"><select class="field" id="indexBook"></select></div>
+      <div class="tabs" id="indexTabs">
+        <button data-doc="outline" class="active">Outline</button>
+        <button data-doc="summary">Summary</button>
+        <button data-doc="synopsis">Synopsis</button>
+        <button data-doc="characters">Characters</button>
+        <button data-doc="storylines">Storylines</button>
+        <button data-doc="subplot-matrix">Subplot Matrix</button>
+      </div>
+      <div id="indexBody"></div>
+    </section>
+
+    <!-- ARCHIVE -->
+    <section class="page" id="page-archive">
+      <div class="label">The Story Bible</div>
+      <h1>The Archive</h1>
+      <p class="lead">Every fact about the series, with where it came from. <span class="status s-canon">canon</span> you confirmed it · <span class="status s-found">found</span> read from the text · <span class="status s-conflict">conflict</span> the text disagrees · <span class="status s-planned">planned</span> for a book not yet written · <span class="status s-retired">retired</span> no longer true.</p>
+      <div class="tabs" id="typeTabs">
+          <button data-type="" class="active">All</button><button data-type="character">Characters</button>
+          <button data-type="place">Places</button><button data-type="object">Objects</button>
+          <button data-type="rule">World rules</button><button data-type="note">Notes</button>
+      </div>
+      <div class="row" style="margin-bottom:20px">
+        <select class="field" id="statusSel"><option value="">Any status</option><option>conflict</option><option>canon</option><option>found</option><option>planned</option></select>
+        <input type="text" id="search" placeholder="Search names and facts">
+        <button class="btn" id="newEntityBtn">+ Entry</button>
+        <a class="btn" id="exportMd">Export .md</a>
+        <a class="btn" id="exportDocx">Export .docx</a>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <!-- REFERENCE DESK -->
+    <section class="page" id="page-desk">
+      <div class="label">Q&amp;A</div>
+      <h1>The Reference Desk</h1>
+      <p class="lead">Questions about gaps and contradictions in the text. Your answers become canon. Nothing is saved until you confirm.</p>
+      <div class="desk">
+        <div>
+          <div id="qcard"></div>
+          <hr class="brass">
+          <h2>Ask about your story</h2>
+          <p class="muted small">Answers come only from the Story Bible and the text, with sources.</p>
+          <div class="row"><input type="text" id="askBox" style="flex:1" placeholder="What do we know about the locked box?"><button class="btn primary" id="askBtn">Ask</button></div>
+          <div id="askOut"></div>
+        </div>
+        <div>
+          <div class="label">Waiting at the desk</div>
+          <div class="queue" id="queue"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="page" id="page-settings">
+      <h1>Settings</h1>
+      <p class="lead">The AI runs on this computer through Ollama. Your manuscript never leaves it.</p>
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:14px;max-width:640px;align-items:center">
+        <label>Reader</label><select class="field" id="setEngine"><option value="ollama">Ollama (local AI)</option><option value="demo">Demo (pattern reader, not AI)</option></select>
+        <label>Model name</label><input type="text" id="setModel">
+        <label>Ollama address</label><input type="text" id="setUrl">
+        <label>Context size</label><input type="number" id="setCtx" step="1024">
+        <label>Longest scene (words)</label><input type="number" id="setScene" step="250">
+      </div>
+      <div class="row" style="margin-top:20px"><button class="btn primary" id="saveSettings">Save</button><span class="muted small" id="settingsMsg"></span></div>
+    </section>
+  </main>
+</div>
+
+<div class="drawer" id="drawer"></div>
+<div class="toast" id="toast"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
