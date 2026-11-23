@@ -45,7 +45,8 @@ jobs:
       - name: Version
         shell: bash
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then V="${GITHUB_REF#refs/tags/v}"; else V="2.0.0"; fi
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then V="${GITHUB_REF#refs/tags/v}"
+          else V="$(python -c 'import quillmaster2; print(quillmaster2.__version__)')"; fi
           echo "APP_VERSION=$V" >> "$GITHUB_ENV"
 
       - name: Build the app
@@ -116,10 +117,23 @@ jobs:
             dist/QuillMaster2-Linux.tar.gz
           if-no-files-found: ignore
 
-      - name: Attach to the release
-        if: startsWith(github.ref, 'refs/tags/v')
+      # Every successful build of main (or a v* tag) publishes the installers as the
+      # release for the version in quillmaster2/__init__.py. GitHub creates the tag.
+      - name: Publish the release
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ env.APP_VERSION }}
+          target_commitish: ${{ github.sha }}
+          name: Quill Master ${{ env.APP_VERSION }}
+          body: |
+            Download the installer for your computer below. Step-by-step install help is in the README:
+            https://github.com/kornerdspider/QUILLMASTER-2#install-it-the-easy-way
+
+            - **Windows:** QuillMaster2-Setup-Windows.exe (or the portable zip)
+            - **Mac (Apple chip):** QuillMaster2-Mac.dmg
+            - **Linux:** QuillMaster2-Linux.tar.gz
+          make_latest: true
           files: |
             dist/QuillMaster2-Setup-Windows.exe
             dist/QuillMaster2-Windows-portable.zip
